@@ -1,0 +1,6 @@
+version: 2
+
+models:
+  - name: fact_properties
+    description: >
+      Properties data corresponding to properties sell/rent data
