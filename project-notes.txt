@@ -1,0 +1,226 @@
+
+
+Project Objective
+Analyse brazil properties sell/rent during 2015 th jan to 2016 Dec.
+Find the total percentage sold property to rented property
+State wise property data 
+Month wise property data
+
+
+Project requirements
+os windows
+tools python, terraform, docker desktop, gitbash, github account, dbt cloud developer account
+google data studio
+
+
+create google cloud account and save authentication key in 
+
+create a new project google cloud and note down the project id
+project id - dtc-de-project-344607
+note down the region
+
+set up service account and role permissions storage admin, bigquery admin, storage object admin
+download key
+
+export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"
+
+# Refresh token/session, and verify authentication
+gcloud auth application-default login
+
+IAM APi enable
+https://console.cloud.google.com/apis/library/iam.googleapis.com
+https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
+
+Terraform
+
+update region value in terraform/variables.tf
+Go to terraform folder and execute following commands
+terraform init
+run 'terraform plan' and enter project id
+run 'terraform apply' and enter project id
+terraform destroy
+
+airflow
+rename gcp auth json key and save to .google folder
+update project id and data lake id in env file
+
+in docker-compose.yml
+GCP_PROJECT_ID: 'dtc-de-project-344607'
+GCP_GCS_BUCKET: "dtc_de_project_data_lake_dtc-de-project-344607"
+
+docker-compose build
+docker-compose up airflow-init
+docker-compose up -d
+docker-compose down
+localhost:8080
+airflow/airflow
+
+bq show --format=json  properati-data-public:properties_br.properties_sell_201505
+bq show --schema --format=prettyjson properati-data-public:properties_br.properties_sell_201505
+
+[
+  {
+    "name": "id", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "created_on", "type": "DATE", "mode": "NULLABLE"
+  },
+  {
+    "name": "operation", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "property_type", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "place_name", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "place_with_parent_names", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "country_name", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "state_name", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "geonames_id", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "lat_lon", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "lat", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "lon", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "price", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "currency", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "price_aprox_local_currency", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "price_aprox_usd", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "surface_total_in_m2", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "surface_covered_in_m2", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "price_usd_per_m2", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "price_per_m2", "type": "FLOAT", "mode": "NULLABLE"
+  },
+  {
+    "name": "floor", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "rooms", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "expenses", "type": "INTEGER", "mode": "NULLABLE"
+  },
+  {
+    "name": "properati_url", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "description", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "title", "type": "STRING", "mode": "NULLABLE"
+  },
+  {
+    "name": "image_thumbnail", "type": "STRING", "mode": "NULLABLE"
+  }
+]
+
+write_disposition = WRITE_APPEND | WRITE_EMPTY | WRITE_TRUNCATE
+
+
+run dag to upload data to bq (external table)
+run dag to create partitioned table from external table
+
+rename sell_data to sell_data_external_table
+from sell_data_external_table to sell_data_partitioned
+
+
+find sum of total sqft in dbt
+
+update terraform for creating two more Dataset production and development
+
+
+
+when creating new project in dbt cloud, please make sure your gcp project auth key file
+
+
+
+
+airflow -> to run dag ->play button -> trigger DAG
+run sell_data_ingestion_dag
+run rent_data_ingestion_dag
+run bq_partioning_dag
+
+DBT
+https://cloud.getdbt.com/
+create new project in dbt and use bigquery and initialize dbt project in dbt cloud
+create a github repository and copy the dbt folder content to repo
+commit the files in github
+go to dbt cloud and check for repo changes
+dbt deps
+dbt run
+
+create new environment
+name Production
+type deployment
+dataset production
+others as default
+
+create new job
+name dbt build
+in commands dbt run --var 'is_test_run: false'
+schedule on
+select every day -> enter 6 for every 
+others as default
+save
+
+run job
+
+
+Google data studio
+https://datastudio.google.com/
+first create data source -> click create -> select data source -> select big query
+DTC DE Project -> production -> fact_properties and connect
+select the Default aggregation (sum) for fields price, surface_covered, surface_total, 
+other fields aggregation as None
+then Create Report
+
+For total sales
+Click Add a chart 
+
+Total properties sold/rent
+select -> select scorecard -> Date range dimension :: none -> Metric :: record count
+
+Number of rooms
+select -> select scorecard -> Date range dimension :: none -> Metric :: rooms
+
+Sell/Rent Distribution
+select -> Pie chart -> Date range dimension :: none -> Dimension :: operation ->  Metric :: record count
+
+Total sales per month
+select -> stacked column chart (Bar chart) -> Add Field(in bottom right corner) -> name created_month -> Formula MONTH(created_on)->
+Date range dimension :: created_on -> Dimension :: created_month -> Break down dimension :: operation -> Metric :: record count
+
+State wise sales
+select -> Table with Heatmap (Table chart) -> Date range dimension :: none -> Dimension :: state_name ->  Metric :: record count
+
+To add title to click on Text icon in the toolbar
+
+https://datastudio.google.com/reporting/8358b104-39b3-4268-ab85-dfa8aacf9408
