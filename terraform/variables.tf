@@ -14,7 +14,7 @@ variable "region" {
 
 variable "credentials" {
   description = "GCP authentication json key file"
-  default = "C:/Users/haris/.google/credentials/google_credentials.json"
+  default = "C:/Users/<your name>/.google/credentials/google_credentials.json"
   type = string
 }
 
