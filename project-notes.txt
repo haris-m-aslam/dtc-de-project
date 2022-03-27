@@ -145,17 +145,6 @@ bq show --schema --format=prettyjson properati-data-public:properties_br.propert
 write_disposition = WRITE_APPEND | WRITE_EMPTY | WRITE_TRUNCATE
 
 
-run dag to upload data to bq (external table)
-run dag to create partitioned table from external table
-
-rename sell_data to sell_data_external_table
-from sell_data_external_table to sell_data_partitioned
-
-
-find sum of total sqft in dbt
-
-update terraform for creating two more Dataset production and development
-
 
 
 when creating new project in dbt cloud, please make sure your gcp project auth key file
@@ -224,3 +213,7 @@ select -> Table with Heatmap (Table chart) -> Date range dimension :: none -> Di
 To add title to click on Text icon in the toolbar
 
 https://datastudio.google.com/reporting/8358b104-39b3-4268-ab85-dfa8aacf9408
+
+Dataset ID
+ properati-data-public:properties_br 
+
